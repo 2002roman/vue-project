@@ -9,11 +9,13 @@
                         <a :href="'https://localhost:8808/usersFiles/'+id+'/'+file.address" download>
                             <i class="fa fa-cloud-download" style="font-size:50px"></i>
                         </a>
+                        <i class="fa fa-trash-o" style="font-size:50px" @click="removeImageC(file.address,index)"></i>
                     </h6>
                 </div>
                 <img :src="'https://localhost:8808/usersFiles/'+id+'/'+file.address">
             </div>
-        </div>
+        </div><br>
+        <button class="buttonR" @click="moreImages">More</button>
     </div>
 </template>
 <script>
@@ -32,18 +34,36 @@ axios.defaults.withCredentials = true
             var vueThis = this
             async function go() {
                 try {
-                    const wes = await axios('https://localhost:8808/userData');
+                    const wes = await axios('https://localhost:8808/userData/0')
                     vueThis.files = wes.data.result
                     vueThis.id = wes.data.id
                     if(wes.data.result[0]==undefined){
                         vueThis.errorB = true
                     }
-                    console.log(wes)
                 }catch (e) {
                     console.error(e); 
                 }
             }
             go()
+        },
+        methods:{
+            removeImageC(fileAddress,index){
+                var vueThis = this
+                axios.delete('https://localhost:8808/removeImage/'+fileAddress).then(function(res){
+                    document.getElementsByClassName("imgDiv")[index].className+=" deleteAnimate"
+                    setTimeout(function (){
+                    //    document.getElementsByClassName("imgDiv")[index].style = "display:none"
+                        this.files.splice(index, 1)
+                    },900)
+                })
+            },
+            moreImages(){
+                var vueThis = this
+                axios('https://localhost:8808/userData/'+vueThis.files.length).then((res)=>{
+                    vueThis.files = vueThis.files.concat(res.data.result)
+                    console.log(vueThis.files)
+                })
+            }
         }
     }    
 </script>
@@ -53,6 +73,8 @@ axios.defaults.withCredentials = true
     }
     #profile{
         float: left;
+        overflow-x:hidden;
+        width:100%;
     }
     #profile .imgDiv{
         width:25%;
@@ -70,6 +92,8 @@ axios.defaults.withCredentials = true
         position: absolute;
         margin-top:20px;
         display:none;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
     #profile .imgDiv .imgTitle{
         text-align: center
@@ -82,18 +106,20 @@ axios.defaults.withCredentials = true
         color:#fff;
         z-index:1000;
         font-size:200%;
-        font-family: 'Kirang Haerang', cursive;
+        font-family: 'Kirang Haerang';
     }
     #profile .imgDiv:hover img{
-        filter:blur(3px)
+        filter:blur(1px)
     }
     #profile .imgDiv:hover{
-        transform:scale(1.4);
+        transform:scale(1.2);
         z-index:1000
     }
     #profile #errorT{
         width:100%;
-        margin-left:20vw;
-        text-align:center;
+    }
+    #profile .deleteAnimate{
+        width:0;
+        height: 0;
     }
 </style>

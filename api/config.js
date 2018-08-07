@@ -11,6 +11,6 @@ exports.facebookCon = {
     };
 exports.corsCon = {
 	'origin':['http://localhost:8081'],
-	'methods': ['GET','POST'],
+	'methods': ['GET','POST','DELETE'],
     'credentials': true
 }

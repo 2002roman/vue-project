@@ -2,7 +2,8 @@
     <div>
         <div id="form-card">
            <div id="card-text">
-                <h3 id="card-title">{{formCardOption.cardTitle}}</h3>
+                <h3 id="card-title">{{formCardOption.cardTitle}}</h3><br>
+                <h6>{{errorText}}</h6>
             </div>
             <div id="card-func">
                     <form v-on:submit.prevent="formComplite()">
@@ -32,30 +33,36 @@
             return {
                 formCardOption: this.$store.state[this.$route.name+"Option"],
                 store: this.$store,
-                widowSize: window.innerWidth,
-                files:""
+                files: "",
+                errorText: ""
             }
         },
         methods:{
             formComplite(){
                 vueThis=this
-                axios.post('https://127.0.0.1:8808/'+this.$route.name,this.formCardOption.formModels).then(function (response) {
+                axios.post('https://localhost:8808/'+this.$route.name,this.formCardOption.formModels).then(function (response) {
                     console.log(response)
-                    if(response.data==false){
-                        vueThis.store.commit('formCompliteError')
+                    if(response.data==true){
+                        vueThis.$store.commit('waveRaising',"1")
+                        setTimeout(function(){
+                            vueThis.$router.push('/user/profile')
+                        },5000)
+                    }else{
                         vueThis.formCardOption.formModels[0].model=""
                         vueThis.formCardOption.formModels[1].model=""
-                    }else{
-                        vueThis.$router.push('home')
+                        vueThis.errorText = vueThis.$store.state[vueThis.$route.name+"ErrorT"]
                     }
                 })
-                this.$store.commit('waveRaising',"1")
-            },
-            facebookAccess(){
-                axios.get('https://127.0.0.1:8808/facebook').then(function (response) {
-                    console.log(response.data)           
-                })
             }
+        },
+        beforeCreate(){
+           var vueThis = this
+            axios("https://localhost:8808/verify").then(function(res){
+                if(res.data==true){
+                    vueThis.$router.push('/user/profile')
+                    console.log("")
+                }
+            })
         }
     } 
 </script>
@@ -67,7 +74,6 @@
             box-shadow:0px 0px 20px;
             border-radius:10px;
             color:gray;
-            overflow-y:scroll;
             overflow-x:hidden;
         }
         #form-card #fcButton a{
@@ -108,6 +114,7 @@
             color: #fff;
             outline: none;
             border: none;
+            width:60%;
             margin-bottom:20px;
             padding-left:20px;
             padding-right:20px;

@@ -5,13 +5,15 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    waveRaising: '0',
+    waveRaising: 0,
     loginOption: '',
-    reginOption: ''
+    reginOption: '',
+    loginErrorT: 'Incorrect username or password',
+    reginErrorT: 'Username busy'
   },
   mutations: {
     waveRaising (state) {
-      state.waveRaising = '1'
+      state.waveRaising = 1
     },
     logInOption (state, option) {
       state.loginOption = option

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
 import login from '@/components/login'
 import regin from '@/components/regin'
 import accessMenu from '@/components/accessMenu.vue'
@@ -13,20 +12,15 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
-    },
-    {
       path: '/access',
       name: 'accessMenu',
       component: accessMenu,
       children: [
         {
-          path: "",
-          redirect: "login"
+          path: '',
+          redirect: 'login'
         },
-      	{
+        {
           path: 'login',
           name: 'login',
           component: login
@@ -48,15 +42,15 @@ export default new Router({
       component: userMenu,
       children: [
         {
-          path: "",
-          redirect: "profile"
+          path: '',
+          redirect: 'profile'
         },
-      	{
+        {
           path: 'profile',
           name: 'profile',
           component: profile
         },
-      	{
+        {
           path: 'upload',
           name: 'upload',
           component: upload
@@ -66,6 +60,10 @@ export default new Router({
           redirect: 'profile'
         }
       ]
+    },
+    {
+      path: '*',
+      redirect: '/access/login'
     }
   ],
   mode: 'history'

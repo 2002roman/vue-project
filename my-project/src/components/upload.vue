@@ -8,7 +8,7 @@
         >{{loadingT}}
         </div>
         <br>
-        <button id="uploadButton" @click="uploadFiles">Upload</button>
+        <button id="uploadButton" @click="uploadFiles">{{uploadBtnT}}</button>
         <br>
         <div id="images">
             <div class='imgDiv' v-for="(file,index) in filesRes">
@@ -33,7 +33,8 @@ export default {
         return{
             classBoolean: false,
             filesRes: [],
-            loadingT: "Drop file!"
+            loadingT: "Drop file!",
+            uploadBtnT: "Upload image"
         }
     },
     methods:{
@@ -69,45 +70,34 @@ export default {
         },
         uploadFiles(e){
             var vueThis = this
+            this.uploadBtnT = "Uploaded..."
             async function go() {
                 try {
-                    const response = await axios.post('https://127.0.0.1:8808/upload',{files:filesRes,cookies:document.cookie});
+                    const response = await axios.post('https://localhost:8808/upload',{files:filesRes})
                     if(response.data==true){
                         filesRes = []
                         vueThis.filesRes = []
+                        vueThis.uploadBtnT = "Upload successful"
+                        setTimeout(function(){
+                            vueThis.uploadBtnT = "Upload image"
+                        },1500)
                     }
                 }catch (err) {
-                    console.error(err); 
+                    console.log(err)
                 }
             }
             if(filesRes[0]) go()
             else alert("Not file for uploading...!")
         },
         removeImage(index){
-            this.filesRes.splice(index, 1);
-            filesRes.splice(index, 1);
+            this.filesRes.splice(index, 1)
+            filesRes.splice(index, 1)
         }
     }
 }
   </script>
 
 <style>
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-  background:transparent;
-}
-/* Track */
-::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey; 
-  border-radius: 5px;
-}
- 
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.3); 
-  border-radius: 5px;
-}
     body{
         text-align: center;
     }
@@ -128,8 +118,7 @@ export default {
         font-size:12px;
         text-overflow: ellipsis;
         width:100%;
-            overflow: hidden;
-
+        overflow: hidden;
     }
     #upload #images{
         margin:20px;

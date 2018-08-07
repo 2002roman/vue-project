@@ -1,13 +1,14 @@
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const passport = require('passport')
 const FacebookStrategy = require('passport-facebook').Strategy
-const fs = require("fs")
-const https = require("https")
-const path = require("path")
-const mime = require("mime")
+const fs = require('fs')
+const https = require('https')
+const mime = require('mime')
 const uuidv1 = require('uuid/v1')
-const config = require("./config.js")
-const con = require("mysql").createConnection(config.mysqlCon)
-const app = require("express")()
+const config = require('./config.js')
+const con = require('mysql').createConnection(config.mysqlCon)
+const app = require('express')()
 
 server = https.createServer({
 	cert : fs.readFileSync('https/certeficate.pem'),
@@ -19,14 +20,14 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 app.use(passport.initialize());
-app.use(passport.session());
-app.use(passport.initialize());
-app.use(passport.session({secret:"okokok"}));
-app.use(require('morgan')('combined'));
-app.use(require('cookie-parser')());
-app.use(require('body-parser').urlencoded({limit : '500mb', extended: false }));
+app.use(passport.session())
+app.use(passport.initialize())
+app.use(passport.session())
+app.use(require('morgan')('combined'))
+app.use(require('cookie-parser')())
+app.use(require('body-parser').urlencoded({limit : '500mb', extended: false }))
 app.use(require('body-parser').json({limit : '500mb'}))
-app.use(require('cors')(config.corsCon));
+app.use(require('cors')(config.corsCon))
 
 function decodeBase64Image(dataString) {
 	if(dataString){
@@ -44,28 +45,31 @@ function decodeBase64Image(dataString) {
 	}
 }
 
-function parseCookie(cookies,name){
-	var pair = cookies.match(new RegExp(name + '=([^;]+)'));
-	return !!pair ? pair[1] : null;
-}
-
-function getUserID(typeAccess,token,callback){
-	query = "SELECT id FROM `users"+typeAccess+"` WHERE accesstoken='"+token+"'"
+function getUserUniqueD(typeAccess,token,callback){
+	var uniqueDataN = "id"
+	if(typeAccess=="local") uniqueDataN = "username" 
+	query = "SELECT "+uniqueDataN+" FROM `users"+typeAccess+"` WHERE accesstoken='"+token+"'"
 	con.query(query,function(err,result,fields){
-		callback(err,result[0].id,fields)
+		callback(err,result[0][uniqueDataN],fields)
 	})
 }
 
-function getUserFiles(id,callback){
-	query = "SELECT * FROM `"+id+"-files`"
+function getUserFiles(id,start,callback){
+	query = "SELECT * FROM `"+id+"-files` LIMIT "+start+",6"
 	con.query(query,function(err,result,fields){
 		callback(err,result,fields)
+		console.log(query)
 	})
 }
 
 function saveFileInDB(id,fileName,fileAddress){
 	query ="INSERT INTO `"+id+"-files`(`name`, `address`) VALUES ('"+fileName+"','"+fileAddress+"')"
 	con.query(query)
+}
+
+function saveCookie(typeAccess,token,res){
+	res.cookie('token',token)
+	res.cookie('typeAccess',typeAccess)
 }
 
 function findOrCreate(user){
@@ -81,6 +85,10 @@ function findOrCreate(user){
 	})
 }
 
+function generateUniqueAccessToken(username){
+	uniqueString = uuidv1()
+	return jwt.sign({ username,uniqueString},"ijdfihdkfjbdkb")
+}
 
 passport.serializeUser(function(user, done) {
 	done(null, user);
@@ -107,28 +115,33 @@ app.get('/image',function(req,res){
 })
 
 app.get('/font',function(req,res){
-	res.sendFile(__dirname+'/Monoton-Regular.ttf')
+	res.sendFile(__dirname+'/fonts/Monoton-Regular.ttf')
 })
 
 app.post('/login',function(req,res){
-	res.setHeader('Content-Type', 'text/plain')
 	query = "SELECT * FROM `userslocal` WHERE username='"+req.body[0].model+"' AND password='"+req.body[1].model+"'"
 	con.query(query, function (err, result, fields) {
 		if(result[0]==undefined){
 			res.send(false)
 		}else{
-			res.cookie('token',"localAccessToken")
-			res.cookie('typeAccess',"local")
+			uniqueToken = generateUniqueAccessToken(req.body[0].model)
+			saveCookie("local",uniqueToken,res)
+			var query = "UPDATE `userslocal` SET `accesstoken`='"+uniqueToken+"' WHERE username='"+req.body[0].model+"'"
+			con.query(query)
 			res.send(true)
 		}
 	})
 })
 
 app.post('/regin',function(req,res){
-	con.query("SELECT * FROM `userslocal` WHERE username='"+req.body[0].model+"'",function(err,res){
-		if(res[0]==undefined){
-			query = "INSERT INTO `userslocal` (username,password,displayname) VALUES ("+req.body[0].model+","+req.body[1].model+","+req.body[2].model+")"
+	con.query("SELECT * FROM `userslocal` WHERE username='"+req.body[0].model+"'",function(err,user){
+		if(user[0]==undefined){
+			uniqueToken = generateUniqueAccessToken(req.body[0].model)
+			query = "INSERT INTO `userslocal` (username,password,displayname,accesstoken) VALUES ('"+req.body[0].model+"','"+req.body[1].model+"','"+req.body[2].model+"','"+uniqueString+"')"
 			con.query(query, function (err, result, fields) {
+				con.query("CREATE TABLE `"+req.body[0].model+"-files` (name VARCHAR(255), address VARCHAR(255))")
+				fs.mkdirSync("./usersFiles/"+req.body[0].model+"-files")
+				saveCookie("local",uniqueToken,res)
 				res.send(true)
 			})
 		}else res.send(false)
@@ -146,12 +159,19 @@ app.get("/facebook/callback",passport.authenticate('facebook',{failureRedirect: 
 	res.redirect('http://localhost:8081/user/profile');
 })
 
-app.get("/userData",function(req,res){
-	getUserID(req.cookies.typeAccess,req.cookies.token,function(err,id,fields){
-		getUserFiles(id,function(err,result,fields){
+app.get("/userData/:start/",function(req,res){
+	getUserUniqueD(req.cookies.typeAccess,req.cookies.token,function(err,id,fields){
+		console.log(id)
+		getUserFiles(id,req.params.start,function(err,result,fields){
 			res.send({result,id})
 		})
 	})
+})
+
+app.get("/logout",(req,res)=>{
+	res.cookie('token','')
+	res.cookie('typeAccess','')
+	res.send(true)
 })
 
 app.get("/usersFiles/:id/:fileAddress",function(req,res){
@@ -159,22 +179,36 @@ app.get("/usersFiles/:id/:fileAddress",function(req,res){
 })
 
 app.post("/upload",function(req,res){
-	getUserID(parseCookie(req.body.cookies,"typeAccess"),parseCookie(req.body.cookies,"token"),function(err,id,fields){
+	 getUserUniqueD(req.cookies.typeAccess,req.cookies.token,function(err,id,fields){
 		for(file of req.body.files){
-			if(file.fileAddress){
-				var decodedImg = decodeBase64Image(file.fileAddress)
-				var imageBuffer = decodedImg.data
-				var type = decodedImg.type
-				var extension = mime.getExtension(type)
-				var fileName =  uuidv1()+"." + extension
-				saveFileInDB(id,file.fileName,fileName)
-				fs.writeFileSync("usersFiles/"+id+"-files/"+fileName, imageBuffer, 'utf8')
-			}
-		}
+	 		if(file.fileAddress){
+	 			var decodedImg = decodeBase64Image(file.fileAddress)
+	 			var imageBuffer = decodedImg.data
+	 			var type = decodedImg.type
+	 			var extension = mime.getExtension(type)
+	 			var fileName =  uuidv1()+"." + extension
+	 			saveFileInDB(id,file.fileName,fileName)
+	 			fs.writeFileSync("usersFiles/"+id+"-files/"+fileName, imageBuffer, 'utf8')
+	 		}
+		 }
+		 res.send(true)
+	 })
+})
+
+app.get("/verify",(req,res)=>{
+	if(req.cookies.token) res.send(true)
+	else res.send(false)
+})
+
+app.delete("/removeImage/:fileAddress",(req,res)=>{
+	getUserUniqueD(req.cookies.typeAccess,req.cookies.token,(err,id,fields)=>{
+		var query = "DELETE FROM `"+id+"-files` WHERE address='"+req.params.fileAddress+"'"
+		con.query(query)
+		fs.unlinkSync("usersFiles/"+id+"-files/"+req.params.fileAddress);
 		res.send(true)
 	})
 })
 
-server.listen(8808, function() {
+server.listen(8808,()=>{
   console.log('Server started..!');
 })
