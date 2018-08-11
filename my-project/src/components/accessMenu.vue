@@ -23,7 +23,6 @@
     var waveHeight=window.innerHeight/8*7
     var waveRaising="0"
     var directionBoolean=0
-    var myFont
 
 import VueP5 from 'vue-p5'
 
@@ -75,8 +74,6 @@ export default {
         for(var c= 0;c<spaceBall;c++){
           balls.push(new Ball(sk,c))
         }
-          myFont = sk.loadFont("https://localhost:8808/font")
-          sk.textFont(myFont)
           sk.frameRate(100)
     },
     draw(sk) {
@@ -99,12 +96,6 @@ export default {
           waveHeight-=30
       }
       waveRaising=this.store.state.waveRaising
-      if(waveRaising==1 && this.store.state.formCompliteError){
-          sk.stroke(sk.color(0,0,0))
-          sk.strokeWeight(1)
-          sk.textSize(50)
-          sk.text("TRY AGAIN", sk.width/100*40, 100)
-      }
       this.windowSize=window.innerWidth
     },
     calcWave(sk){

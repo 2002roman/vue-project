@@ -1,12 +1,12 @@
 <template>
     <div id="profile">
-        <h4 v-if="errorB" id="errorT">No such file...!</h4>
+        <h4 id="errorT" v-if="files[0]==undefined">No such file...!</h4>
         <div v-for='(file,index) in files' class="imgDiv">
             <div>
                 <div class="imgTitle">
                     <h6>{{file.name}}</h6>
                     <h6>
-                        <a :href="'https://localhost:8808/usersFiles/'+id+'/'+file.address" download>
+                        <a :href="'https://localhost:8808/usersFiles/'+id+'/'+file.address" download="image.jpeg">
                             <i class="fa fa-cloud-download" style="font-size:50px"></i>
                         </a>
                         <i class="fa fa-trash-o" style="font-size:50px" @click="removeImageC(file.address,index)"></i>
@@ -26,9 +26,7 @@ axios.defaults.withCredentials = true
             return {
                 msg:"okok",
                 files: [],
-                id: "",
-                errorB: false
-            }
+                id: ""            }
         },
         mounted(){
             var vueThis = this
@@ -37,9 +35,6 @@ axios.defaults.withCredentials = true
                     const wes = await axios('https://localhost:8808/userData/0')
                     vueThis.files = wes.data.result
                     vueThis.id = wes.data.id
-                    if(wes.data.result[0]==undefined){
-                        vueThis.errorB = true
-                    }
                 }catch (e) {
                     console.error(e); 
                 }
@@ -52,8 +47,7 @@ axios.defaults.withCredentials = true
                 axios.delete('https://localhost:8808/removeImage/'+fileAddress).then(function(res){
                     document.getElementsByClassName("imgDiv")[index].className+=" deleteAnimate"
                     setTimeout(function (){
-                    //    document.getElementsByClassName("imgDiv")[index].style = "display:none"
-                        this.files.splice(index, 1)
+                        vueThis.files.splice(index, 1)
                     },900)
                 })
             },

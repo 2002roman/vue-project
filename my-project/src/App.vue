@@ -9,8 +9,6 @@ export default {
   name: 'App',
   data:function(){
     return {
-      script: "",
-      ps: ""
     }
   }
 }

@@ -27,6 +27,7 @@
 
 <script>
     const axios = require('axios')
+axios.defaults.withCredentials = true
     var vueThis
     export default{
         data(){
