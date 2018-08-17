@@ -2,7 +2,7 @@ const mysql = require('mysql')
 const config = require('../../config/setting')
 
 class user{
-	getUserUniqueD(typeAccess,token,callback){
+	getUserUniqueD(typeAccess,token,successCallback,failedCallback){
 		const con = require('mysql').createConnection(config.mysqlCon)
 		con.connect()
 		var uniqueDataN = "id"
@@ -10,8 +10,8 @@ class user{
 		var query = "SELECT "+uniqueDataN+" FROM `users"+typeAccess+"` WHERE accesstoken='"+token+"'"
 		con.query(query,function(err,result,fields){
 			con.end()
-			if(result!==undefined) callback(err,result[0][uniqueDataN],fields)
-			else console.log("AccessToken denied...!")
+			if(result[0]!==undefined) successCallback(err,result[0][uniqueDataN],fields)
+			else failedCallback()
 		})
 	}
 	getUserFiles(uniqueD,start,callback){

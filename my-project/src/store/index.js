@@ -7,9 +7,7 @@ export default new Vuex.Store({
   state: {
     waveRaising: 0,
     loginOption: '',
-    reginOption: '',
-    loginErrorT: 'Incorrect username or password',
-    reginErrorT: 'Username busy'
+    reginOption: ''
   },
   mutations: {
     waveRaising (state) {

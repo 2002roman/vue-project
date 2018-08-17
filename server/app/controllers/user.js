@@ -2,8 +2,15 @@ var user = require('../models/user');
 var uuidv1 = require('uuid/v1')
 var mime = require('mime')
 var fs = require('fs')
+var path = require('path')
 
-decodeBase64Image = (dataString)=>{
+function accessTokenDeniedF(req,res){
+	res.clearCookie('token')
+	res.clearCookie('typeAccess')
+	res.send({
+		statusInQuery:false,
+		err:"Access Token Denied...Please sign in again"
+	})
 }
 
 exports.getUserImages = (req,res)=>{
@@ -11,6 +18,20 @@ exports.getUserImages = (req,res)=>{
 		user.getUserFiles(uniqueD,req.params.start,(err,result,fields)=>{
 			res.send({result,id:uniqueD})
 		})
+	},()=>{
+		accessTokenDeniedF(req,res)
+	})
+}
+
+exports.image = (req,res)=>{
+    user.getUserUniqueD(req.cookies.typeAccess,req.cookies.token,(err,uniqueD,fields)=>{
+    	res.sendFile(path.join(__dirname, '../../usersFiles/'+uniqueD+'-files/',req.params.fileAddress))
+    })
+}
+
+exports.downloadImage = (req,res)=>{
+	user.getUserUniqueD(req.cookies.typeAccess,req.cookies.token,(err,uniqueD,fields)=>{
+		res.download(path.join(__dirname, '../../usersFiles/'+uniqueD+'-files/',req.params.fileAddress),req.params.fileName)
 	})
 }
 
@@ -25,9 +46,9 @@ exports.upload = (req,res)=>{
     			var fileName =  uuidv1()+"." + extension
     			user.insertImage(uniqueD,file.fileName,fileName)
     			fs.writeFileSync("usersFiles/"+uniqueD+"-files/"+fileName, imageBuffer, 'utf8')
-				res.send(true)
 			}
     	}
+    	res.send(true)
     })
 }
 

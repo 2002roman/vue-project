@@ -68,7 +68,7 @@ export default {
   methods:{
     setup(sk){
       sk.createCanvas(sk.displayWidth,sk.displayHeight);
-      bg = sk.loadImage("https://localhost:8808/image")
+      bg = sk.loadImage("https://localhost:8808/public/img/img.jpg")
       dx = (sk.TWO_PI / period) * xspacing
       yvalues = new Array(sk.floor(sk.width/xspacing))
         for(var c= 0;c<spaceBall;c++){
@@ -149,7 +149,7 @@ export default {
     z-index:0;
   }
   body{
-    background-image:url("https://localhost:8808/image");
+    background-image:url("https://localhost:8808/public/img/img.jpg");
     background-size:cover;
     text-align:center;
   }

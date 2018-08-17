@@ -24,7 +24,7 @@
                       label: "Password"
                   },
                    {
-                      name: "displayname",
+                      name: "name",
                       type: "text",
                       label: "Name Lastname"
                   }
@@ -44,7 +44,7 @@
                       model:""
                   },
                   {
-                      name:"displayname",
+                      name:"name",
                       model:""
                   }
               ]

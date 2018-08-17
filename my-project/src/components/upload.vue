@@ -70,9 +70,9 @@ export default {
         },
         uploadFiles(e){
             var vueThis = this
-            this.uploadBtnT = "Uploaded..."
             async function go() {
                 try {
+                    vueThis.uploadBtnT = "Uploaded..."
                     const response = await axios.post('https://localhost:8808/upload',{files:filesRes})
                     if(response.data==true){
                         filesRes = []

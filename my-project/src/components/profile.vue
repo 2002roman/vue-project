@@ -6,16 +6,16 @@
                 <div class="imgTitle">
                     <h6>{{file.name}}</h6>
                     <h6>
-                        <a :href="'https://localhost:8808/usersFiles/'+id+'/'+file.address" download="image.jpeg">
-                            <i class="fa fa-cloud-download" style="font-size:50px"></i>
+                        <a :href="'https://localhost:8808/downloadImage/'+file.address+'/'+file.name" download>
+                            <font-awesome-icon :icon="['fas', 'download']" style="font-size:50px"/>
                         </a>
-                        <i class="fa fa-trash-o" style="font-size:50px" @click="removeImageC(file.address,index)"></i>
+                        <font-awesome-icon :icon="['fas', 'trash']" style="font-size:50px" @click="removeImageC(file.address,index)"/>
                     </h6>
                 </div>
-                <img :src="'https://localhost:8808/usersFiles/'+id+'/'+file.address">
+                <img :src="'https://localhost:8808/userImage/'+file.address">
             </div>
         </div><br>
-        <button class="buttonR" @click="moreImages">More</button>
+        <button class="buttonR" @click="moreImages" v-if="files[0]!==undefined">More</button>
     </div>
 </template>
 <script>
@@ -23,10 +23,9 @@ const axios = require('axios')
 axios.defaults.withCredentials = true
     export default{
         data(){
-            return {
-                msg:"okok",
-                files: [],
-                id: ""            }
+            return { 
+                files: []
+            }
         },
         mounted(){
             var vueThis = this
@@ -34,7 +33,6 @@ axios.defaults.withCredentials = true
                 try {
                     const wes = await axios('https://localhost:8808/userData/0')
                     vueThis.files = wes.data.result
-                    vueThis.id = wes.data.id
                 }catch (e) {
                     console.error(e); 
                 }
@@ -55,7 +53,6 @@ axios.defaults.withCredentials = true
                 var vueThis = this
                 axios('https://localhost:8808/userData/'+vueThis.files.length).then((res)=>{
                     vueThis.files = vueThis.files.concat(res.data.result)
-                    console.log(vueThis.files)
                 })
             }
         }
@@ -115,5 +112,6 @@ axios.defaults.withCredentials = true
     #profile .deleteAnimate{
         width:0;
         height: 0;
+        font-size:0;
     }
 </style>

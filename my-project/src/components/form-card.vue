@@ -3,7 +3,7 @@
         <div id="form-card">
            <div id="card-text">
                 <h3 id="card-title">{{formCardOption.cardTitle}}</h3><br>
-                <h6>{{errorText}}</h6>
+                <h6 v-if="errorText!==''">{{errorText}}</h6>
             </div>
             <div id="card-func">
                     <form v-on:submit.prevent="formComplite()">
@@ -16,9 +16,7 @@
                     <router-link :to="{ name: formCardOption.redirectParams.link }">{{formCardOption.redirectParams.name}}</router-link></h6>
                     </form>
                     <button id="fcButton">
-                        <i class="fa fa fa-facebook" style="font-size:24px;">
-                            <a href="https://localhost:8808/facebook">Connect with Facebook</a>
-                        </i>
+                        <a href="https://localhost:8808/facebook">Connect with Facebook</a>
                     </button>
             </div>
         </div>
@@ -41,8 +39,12 @@ axios.defaults.withCredentials = true
         methods:{
             formComplite(){
                 vueThis=this
-                axios.post('https://localhost:8808/'+this.$route.name,this.formCardOption.formModels).then(function (response) {
-                    console.log(response)
+                var models = {}
+                for(var model of this.formCardOption.formModels){
+                    models[model.name] = model.model
+                }
+                console.log(models)
+                axios.post('https://localhost:8808/'+this.$route.name,models).then(function (response) {
                     if(response.data==true){
                         vueThis.$store.commit('waveRaising',"1")
                         setTimeout(function(){
@@ -51,7 +53,7 @@ axios.defaults.withCredentials = true
                     }else{
                         vueThis.formCardOption.formModels[0].model=""
                         vueThis.formCardOption.formModels[1].model=""
-                        vueThis.errorText = vueThis.$store.state[vueThis.$route.name+"ErrorT"]
+                        vueThis.errorText = response.data
                     }
                 })
             }
@@ -121,7 +123,6 @@ axios.defaults.withCredentials = true
             padding-right:20px;
             padding-top:10px;
             padding-bottom:10px;
-            line-height:100vw;
         }
          @media only screen and (min-width: 641px) {
             #form-card {
