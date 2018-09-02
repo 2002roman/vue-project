@@ -8,7 +8,7 @@ CREATE TABLE `usersfacebook` (
 
   `accesstoken` varchar(255) NOT NULL
 
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+)
 
 
 
@@ -21,5 +21,4 @@ CREATE TABLE `userslocal` (
   `displayname` text NOT NULL,
 
   `accesstoken` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
+)
