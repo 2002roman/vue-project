@@ -12,7 +12,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.2",
     "@fortawesome/free-solid-svg-icons": "^5.2.0",
     "@fortawesome/vue-fontawesome": "^0.1.1",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "rellax": "^1.6.2",
     "vue": "^2.5.2",
     "vue-awesome": "^3.1.0",
